@@ -218,10 +218,10 @@ $(L_MOD_LIB): $(OBJ_OTHER_FILES)
 
 # Rule for making object files
 $(OBJ_DIR)/%.o: $(SRC_DIR)/%.C
-	$(CCC) $(C++FLAGS) -c $< -o $@
+	$(CCC) $(C++FLAGS) -DHTMLSSI -c $< -o $@
 
 
 # Phony rule for making object files
 %.o: $(SRC_DIR)/%.C
-	$(CCC) $(C++FLAGS) -c $< -o $(OBJ_DIR)/$@
+	$(CCC) $(C++FLAGS) -DHTMLSSI -c $< -o $(OBJ_DIR)/$@
 
