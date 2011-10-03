@@ -153,6 +153,9 @@ clean: clean_build clean_test
 	$(CCC) $(LDFLAGS) $< $(M_MOD_LIB) $(ALL_DEP_LIBS) $(MALLOCLIB) -lm -o $(L_BIN_DIR)/$@
 	@cp -f $(L_BIN_DIR)/$@ $(M_BIN_DIR)/$@
 	@cd $(L_BIN_DIR); ../$(INSTALL) -m 0755 $(TARGET_SCRIPTS) ../$(M_BIN_DIR)
+	@mkdir -p ../html
+	@mkdir -p ../html/icons
+	@mkdir -p ../html/html-includes
 	@cp -f ./icons/*.gif ../html/icons
 	@cp -f ./html-includes/*.txt ../html/html-includes
 
