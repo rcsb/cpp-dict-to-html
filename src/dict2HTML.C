@@ -739,7 +739,7 @@ void getCategoryInfo(DicFile * dic)
   string name, value, value1, value2;
   int   nhits = 0;
   unsigned int   idb;
-  ISTable *tbl,*tblNdbD ,*tblEx ,*tblNdbEx ,*tblKey ,*tblItem ;
+  ISTable *tbl, *tblNdbD, *tblEx ,*tblNdbEx ,*tblKey , *tblItem,  *tblPdbxD, *tblPdbxEx;
   vector<unsigned int> listOut;
 
   FILE *fp, *fp1;
@@ -770,6 +770,7 @@ void getCategoryInfo(DicFile * dic)
   numCategory = tbl->GetNumRows();
   
   tblNdbD = block1.GetTablePtr("ndb_category_description");
+  tblPdbxD = block1.GetTablePtr("pdbx_category_description");
   if (tblNdbD != NULL)  //ikeyNdbD = tblNdbD->GetColumnIndex("description")
     ;
 
@@ -779,9 +780,12 @@ void getCategoryInfo(DicFile * dic)
 	 //ikeyEx1 = tblEx->GetColumnIndex("case");
   }
   tblNdbEx = block.GetTablePtr("ndb_category_examples");
+  tblPdbxEx = block.GetTablePtr("pdbx_category_examples");
   if (tblNdbEx != NULL) {
 	 //ikeyNdbEx1 = tblNdbEx->GetColumnIndex("case");
   }
+
+
   tblKey = block.GetTablePtr("category_key");
   if (tblKey != NULL) {
 	 //ikeyKey1 = tblKey->GetColumnIndex("name");
@@ -872,6 +876,24 @@ void getCategoryInfo(DicFile * dic)
       }
     }
     listOut.clear();
+
+    nhits  = selectionQuery1(dic,dataBlockNames[0].c_str(),
+			    "pdbx_category_description",
+			    "id",
+			    categoryName.c_str(),
+			     listOut);
+    if (nhits > 0) {
+      for (j = 0; j < nhits; j++) {
+	value = (*tblPdbxD)(listOut[j], "description");
+	if (!CifString::IsEmptyValue(value)) {  
+	  htput_formatted_section_with_icon(fp1,"Deposition Description", value.c_str(),HT_ICON_DESCRIPTION);
+	  value.clear(); 
+	}
+      }
+    }
+    listOut.clear();
+
+
 /*
  *  Get the category examples ...
  */
@@ -913,7 +935,28 @@ void getCategoryInfo(DicFile * dic)
 	}
       } 
     }
-	 listOut.clear();
+
+    listOut.clear();
+
+    nhits  = selectionQuery1(dic,dataBlockNames[0].c_str(),
+			    "pdbx_category_examples",
+			    "id",
+			    categoryName.c_str(), listOut);
+    value2.clear(); 
+    if (nhits > 0) {
+      htput_header2_text_with_icon(fp1,"Deposition Category Examples",HT_ICON_EXAMPLES);
+      for (j = 0; j < nhits; j++) {
+		  value1 = (*tblPdbxEx)(listOut[j], "case");
+                  if (tblPdbxEx->IsColumnPresent("detail"))
+		    value2 = (*tblPdbxEx)(listOut[j], "detail");
+		  if (!CifString::IsEmptyValue(value1)) {  
+	  htput_example_section_with_icon(fp1,value2,value1.c_str(),j+1,HT_ICON_DEFAULT1);
+	  value1.clear(); 
+	  value2.clear(); 
+	}
+      } 
+    }
+    listOut.clear();
 
 /*
  *  Get the category key items ...
@@ -1123,7 +1166,7 @@ void getItemInfo(DicFile * dic)
       }
     }
 
-	 listOut.clear();
+    listOut.clear();
 
     nhits  = selectionQuery1(dic,dataBlockNames[idb-1].c_str(),
 			    "ndb_item_description",
@@ -1141,12 +1184,29 @@ void getItemInfo(DicFile * dic)
       }
     }
 
-	 listOut.clear();
+    listOut.clear();
+
+    nhits  = selectionQuery1(dic,dataBlockNames[idb-1].c_str(),
+			     "pdbx_item_description",
+			     "name",
+			     itemName.c_str(),listOut);
+    if (nhits > 0) {
+      tbl = block1.GetTablePtr("pdbx_item_description");
+      for (j = 0; j < nhits; j++) {
+		  value1 = (*tbl)(listOut[j], "description");
+		  if (!CifString::IsEmptyValue(value1)) { 
+	  htput_formatted_section_with_icon(fp1,"Deposition Description", value1.c_str(),HT_ICON_DESCRIPTION);
+	  value1.clear();
+	}
+      }
+    }
+
+    listOut.clear();
 
 /************************************************************************
  *   Get the Category id...
  */
-	 value = (*tblitem)(i, "category_id");
+    value = (*tblitem)(i, "category_id");
     if (value.c_str() != 0)    { 
       escapeFileName(value.c_str(),fbuf1);
       htput_labeled_ref1_with_icon(fp1,"Categories",fbuf1,"Category",value.c_str(),HT_ICON_CATEGORY); 
@@ -1177,7 +1237,7 @@ void getItemInfo(DicFile * dic)
 		}
     }
 	 
-	 listOut.clear();
+    listOut.clear();
 		  
     nhits  = selectionQuery1(dic,dataBlockNames[idb-1].c_str(),
 			    "ndb_item_examples",
@@ -1197,18 +1257,71 @@ void getItemInfo(DicFile * dic)
       }
     }
 
-
-	 listOut.clear();
+    listOut.clear();
+    //
+    nhits  = selectionQuery1(dic,dataBlockNames[idb-1].c_str(),
+			    "pdbx_item_examples",
+			    "name",
+			    itemName.c_str(), listOut);
+    if (nhits > 0) {
+		tbl = block1.GetTablePtr("pdbx_item_examples");
+      htput_header2_text_with_icon(fp1,"Deposition Item Examples",HT_ICON_EXAMPLES);
+      for (j = 0; j < nhits; j++) {
+		  value1 = (*tbl)(listOut[j], "case");
+		  value2 = (*tbl)(listOut[j], "detail");
+		  if (!CifString::IsEmptyValue(value1)) { 
+			 htput_example_section_with_icon(fp1,value2,value1.c_str(),j+1,HT_ICON_DEFAULT1);
+			 value1.clear();
+			 value2.clear();
+		  }
+      }
+    }
+    listOut.clear();
 
 
 /************************************************************************
  *   Get the mandatory code ...
  */
-	 value = (*tblitem)(i, "mandatory_code");
-		  if (!CifString::IsEmptyValue(value)) { 
+    value = (*tblitem)(i, "mandatory_code");
+    if (!CifString::IsEmptyValue(value)) { 
       htput_labeled_text_with_icon(fp1,"Mandatory Code",value.c_str(),HT_ICON_MAN); 
 			 value.clear();
     }
+
+
+    nhits  = selectionQuery1(dic,dataBlockNames[idb-1].c_str(),
+			     "ndb_item",
+			     "name",
+			     itemName.c_str(),listOut);
+    if (nhits > 0) {
+      tbl = block1.GetTablePtr("ndb_item");
+      for (j = 0; j < nhits; j++) {
+	value1 = (*tbl)(listOut[j], "mandatory_code");
+	if (!CifString::IsEmptyValue(value1)) { 
+	  htput_labeled_text_with_icon(fp1,"Local Mandatory Code",value1.c_str(),HT_ICON_MAN); 
+	  value1.clear();
+	}
+      }
+    }
+
+    listOut.clear();
+
+    nhits  = selectionQuery1(dic,dataBlockNames[idb-1].c_str(),
+			     "pdbx_item",
+			     "name",
+			     itemName.c_str(),listOut);
+    if (nhits > 0) {
+      tbl = block1.GetTablePtr("pdbx_item");
+      for (j = 0; j < nhits; j++) {
+	value1 = (*tbl)(listOut[j], "mandatory_code");
+	if (!CifString::IsEmptyValue(value1)) { 
+	  htput_labeled_text_with_icon(fp1,"Deposition Mandatory Code",value1.c_str(),HT_ICON_MAN); 
+	  value1.clear();
+	}
+      }
+    }
+
+    listOut.clear();
 
 
 /************************************************************************
@@ -1229,7 +1342,42 @@ void getItemInfo(DicFile * dic)
       }
     }
 
-	 listOut.clear();
+    listOut.clear();
+
+    nhits  = selectionQuery1(dic,dataBlockNames[idb-1].c_str(),
+			    "ndb_item_type",
+			    "name",
+			    itemName.c_str(), listOut);
+    if (nhits > 0) {
+      tbl = block1.GetTablePtr("ndb_item_type");
+      for (j = 0; j < nhits; j++) {
+	value1 = (*tbl)(listOut[j], "code");
+	if (!CifString::IsEmptyValue(value1)) { 
+	  htput_labeled_ref1_with_icon(fp1,"Data","types","Local Data Type Code",value1.c_str(),HT_ICON_TYPE);
+	  value1.clear(); 
+	}
+      }
+    }
+
+    listOut.clear();
+
+    nhits  = selectionQuery1(dic,dataBlockNames[idb-1].c_str(),
+			    "pdbx_item_type",
+			    "name",
+			    itemName.c_str(), listOut);
+    if (nhits > 0) {
+      tbl = block1.GetTablePtr("pdbx_item_type");
+      for (j = 0; j < nhits; j++) {
+	value1 = (*tbl)(listOut[j], "code");
+	if (!CifString::IsEmptyValue(value1)) { 
+	  htput_labeled_ref1_with_icon(fp1,"Data","types","Deposition Data Type Code",value1.c_str(),HT_ICON_TYPE);
+	  value1.clear(); 
+	}
+      }
+    }
+
+    listOut.clear();
+
 
 /************************************************************************
  *  Get the item units
@@ -1310,7 +1458,8 @@ void getItemInfo(DicFile * dic)
       htput_close_center(fp1);
     }
 
-	 listOut.clear();
+    listOut.clear();
+    //
     nhits  = selectionQuery1(dic,dataBlockNames[idb-1].c_str(),
 			    "ndb_item_enumeration",
 			    "name",
@@ -1348,9 +1497,50 @@ void getItemInfo(DicFile * dic)
       htput_close_table(fp1);
       htput_close_center(fp1);
     }
+    listOut.clear();
+
+    //
+    nhits  = selectionQuery1(dic,dataBlockNames[idb-1].c_str(),
+			     "pdbx_item_enumeration",
+			     "name",
+			     itemName.c_str(), listOut);
+    if (nhits > 0) {
+      memset(cbuf1,'\0',MAXLINE);  
+      sprintf(cbuf1,"Deposition Enumeration Values");
+      htput_header2_text_with_icon(fp1,cbuf1,HT_ICON_ENUMERATION);
+      htput_open_center(fp1);
+      htput_open_table_with_border(fp1);
+      htput_open_row(fp1);
+      htput_table_col_header(fp1,"Item Value");
+      htput_table_col_header(fp1,"Description");
+      htput_close_row(fp1);
+      Block& currBlock = dic->GetBlock(dic->GetFirstBlockName());
+      tbl = currBlock.GetTablePtr("pdbx_item_enumeration");
+      for (j = 0; j < nhits; j++) {
+		  value1 = (*tbl)(listOut[j], "value");
+		  value2 = (*tbl)(listOut[j], "detail");
+		  htput_open_row(fp1);
+		  if (!CifString::IsEmptyValue(value1)) { 
+			 htput_table_col_text(fp1,value1.c_str());
+			 value1.clear();
+		  } else {
+			 htput_table_col_text(fp1,blank);
+		  }
+		  if (!CifString::IsEmptyValue(value2)) { 
+			 htput_table_col_text(fp1,value2.c_str());
+			 value2.clear();
+		  } else {
+			 htput_table_col_text(fp1,blank);
+		  }
+		  htput_close_row(fp1);
+      }
+      htput_close_table(fp1);
+      htput_close_center(fp1);
+    }
+    listOut.clear();
 
 
-	 listOut.clear();
+
 /************************************************************************
  *  Get the item range  ....
  */
@@ -1369,8 +1559,8 @@ void getItemInfo(DicFile * dic)
       htput_table_col_header(fp1,"Maximum Value");
       htput_close_row(fp1);
 
-                Block& currBlock = dic->GetBlock(dic->GetFirstBlockName());
-		tbl = currBlock.GetTablePtr("item_range");
+      Block& currBlock = dic->GetBlock(dic->GetFirstBlockName());
+      tbl = currBlock.GetTablePtr("item_range");
       for (j = 0; j < nhits; j++) {
 		  value1 = (*tbl)(listOut[j], "minimum");
 		  value2 = (*tbl)(listOut[j], "maximum");
@@ -1393,9 +1583,93 @@ void getItemInfo(DicFile * dic)
       htput_close_table(fp1);
       htput_close_center(fp1);
     }
+    listOut.clear();
+
+    nhits  = selectionQuery1(dic,dataBlockNames[idb-1].c_str(),
+			    "ndb_item_range",
+			    "name",
+			    itemName.c_str(),listOut);
+    if (nhits > 0) {
+      memset(cbuf1,'\0',MAXLINE);  
+      sprintf(cbuf1,"Local Enumeration Range");
+      htput_header2_text_with_icon(fp1,cbuf1,HT_ICON_RANGE);
+      htput_open_center(fp1);
+      htput_open_table_with_border(fp1);
+      htput_open_row(fp1);
+      htput_table_col_header(fp1,"Minimum Value");
+      htput_table_col_header(fp1,"Maximum Value");
+      htput_close_row(fp1);
+
+      Block& currBlock = dic->GetBlock(dic->GetFirstBlockName());
+      tbl = currBlock.GetTablePtr("ndb_item_range");
+      for (j = 0; j < nhits; j++) {
+		  value1 = (*tbl)(listOut[j], "minimum");
+		  value2 = (*tbl)(listOut[j], "maximum");
+		  htput_open_row(fp1);
+		  if (!CifString::IsEmptyValue(value1)) { 
+			 htput_table_col_text(fp1,value1.c_str());
+			 value1.clear();
+		  } else {
+			 htput_table_col_text(fp1,blank);
+		  }
+		  if (!CifString::IsEmptyValue(value2)) { 
+			 htput_table_col_text(fp1,value2.c_str());
+			 value2.clear();
+		  } else {
+			 htput_table_col_text(fp1,blank);
+		  }
+		  htput_close_row(fp1);
+		  
+      }
+      htput_close_table(fp1);
+      htput_close_center(fp1);
+    }
+    listOut.clear();
 
 
-	 listOut.clear();
+    nhits  = selectionQuery1(dic,dataBlockNames[idb-1].c_str(),
+			    "pdbx_item_range",
+			    "name",
+			    itemName.c_str(),listOut);
+    if (nhits > 0) {
+      memset(cbuf1,'\0',MAXLINE);  
+      sprintf(cbuf1,"Deposition Enumeration Range");
+      htput_header2_text_with_icon(fp1,cbuf1,HT_ICON_RANGE);
+      htput_open_center(fp1);
+      htput_open_table_with_border(fp1);
+      htput_open_row(fp1);
+      htput_table_col_header(fp1,"Minimum Value");
+      htput_table_col_header(fp1,"Maximum Value");
+      htput_close_row(fp1);
+
+      Block& currBlock = dic->GetBlock(dic->GetFirstBlockName());
+      tbl = currBlock.GetTablePtr("pdbx_item_range");
+      for (j = 0; j < nhits; j++) {
+		  value1 = (*tbl)(listOut[j], "minimum");
+		  value2 = (*tbl)(listOut[j], "maximum");
+		  htput_open_row(fp1);
+		  if (!CifString::IsEmptyValue(value1)) { 
+			 htput_table_col_text(fp1,value1.c_str());
+			 value1.clear();
+		  } else {
+			 htput_table_col_text(fp1,blank);
+		  }
+		  if (!CifString::IsEmptyValue(value2)) { 
+			 htput_table_col_text(fp1,value2.c_str());
+			 value2.clear();
+		  } else {
+			 htput_table_col_text(fp1,blank);
+		  }
+		  htput_close_row(fp1);
+		  
+      }
+      htput_close_table(fp1);
+      htput_close_center(fp1);
+    }
+    listOut.clear();
+
+
+
 /************************************************************************
  *  Get the item aliases ....
  */
@@ -1415,8 +1689,8 @@ void getItemInfo(DicFile * dic)
       htput_table_col_header(fp1,"Version");
       htput_close_row(fp1);
 
-                Block& currBlock = dic->GetBlock(dic->GetFirstBlockName());
-		tbl = currBlock.GetTablePtr("item_aliases");
+      Block& currBlock = dic->GetBlock(dic->GetFirstBlockName());
+      tbl = currBlock.GetTablePtr("item_aliases");
       for (j = 0; j < nhits; j++) {
 		  value1 = (*tbl)(listOut[j], "alias_name");
 		  value2 = (*tbl)(listOut[j], "dictionary");
