@@ -41,7 +41,8 @@ using std::endl;
 #define MAXLINE  8192
 
 int igbuf[MAXLINE];
-char cbuf1[MAXLINE], cbuf2[MAXLINE], filebuffer[MAXROW];
+// cbuf1 gets potentially MAXLINE + extra strings
+char cbuf1[MAXLINE*2], cbuf2[MAXLINE], filebuffer[MAXROW];
 char fbuf1[MAXLINE];
 
 /* char *blank = "                  "; */
